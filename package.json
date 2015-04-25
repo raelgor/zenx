@@ -1,12 +1,21 @@
 {
   "name": "zenx",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A lite cloud server system.",
+  "homepage": "https://zenx.io/",
+  "icon": "https://tournouatichu.com/zenx.png",
+  "license": "MIT",
+  "main": "main.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/raelgor/zenx-server.git"
   },
   "dependencies": {
     "lodash": "3.7.0"
+  },
+  "author": {
+    "name": "Kosmas Papadatos",
+    "email": "kosmas.papadatos@gmail.com",
+    "url": "https://plus.google.com/+KosmasPapadatos"
   }
 }
