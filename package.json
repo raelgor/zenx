@@ -1,0 +1,12 @@
+{
+  "name": "zenx",
+  "version": "0.0.1",
+  "description": "A lite cloud server system.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/raelgor/zenx-server.git"
+  },
+  "dependencies": {
+    "lodash": "3.7.0"
+  }
+}
