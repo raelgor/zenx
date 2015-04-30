@@ -1,4 +1,4 @@
-app.controller('desktop', ['$scope','$compile','$timeout', '$rootScope', function ($scope,$compile,$timeout,$rootScope) {
+﻿app.controller('desktop', ['$scope','$compile','$timeout', '$rootScope', function ($scope,$compile,$timeout,$rootScope) {
 
     $scope.text = {};
 
@@ -172,7 +172,7 @@ app.controller('desktop', ['$scope','$compile','$timeout', '$rootScope', functio
             minWidth: 600,
             minHeight: 600,
             title: ZenX.text.SETTINGS,
-            template: '<div class="app-spinner"></div><div ng-controller="settings"></div>',
+            template: '<div class="app-spinner"></div><div class="out ani02" ng-controller="settings"></div>',
             callback: function (win) {
                 win.attr('data-module', 'settings');
             }

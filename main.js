@@ -1,4 +1,4 @@
-// ZenX Server
+﻿// ZenX Server
 var express     = require('express'),
     fs          = require('fs'),
     mongodb     = require('mongodb').MongoClient,
@@ -13,7 +13,20 @@ var express     = require('express'),
     bodyParser  = require('body-parser'),
     api         = {},
     prompt      = require('prompt'),
-    jade        = global.jade = require('jade');
+    jade        = global.jade = require('jade'),
+    bouncer     = require('http-bouncer');
+
+// Add bouncing rule
+bouncer.config.JSON_API_CALLS.push({
+    MATCH: {
+            api: "core",
+            request: "login"
+    },
+    INTERVAL: 10000,
+    LIMIT: 10,
+    INCLUDE_IP: true,
+    INCLUDE_FROM_MATCH: ["username"]
+});
 
 // Debugger CLI
 prompt.start();
@@ -83,13 +96,14 @@ function init(err, db) {
             zenOut("System keys are missing. Initializing...");
 
             keys = [
-                { key: 'MAX_HTTP_UPLOAD_SIZE',     value: '5mb' },
-                { key: 'ZENX_MANAGER_SSL_CERT',    value: '/ssl/ssl.crt' },
-                { key: 'ZENX_MANAGER_SSL_KEY',     value: '/ssl/ssl.key' },
-                { key: 'INITIALIZED',              value: '1'},
-                { key: 'DEFAULT_BACKGROUND_IMAGE', value: 'images/bg6.jpg' },
-                { key: 'DEFAULT_PROFILE_IMAGE',    value: 'images/default.gif' },
-                { key: 'DEFAULT_LANGUAGE',         value: 'en' }
+                { key: 'MAX_HTTP_UPLOAD_SIZE',          value: '5mb' },
+                { key: 'ZENX_MANAGER_SSL_CERT',         value: '/ssl/ssl.crt' },
+                { key: 'ZENX_MANAGER_SSL_KEY',          value: '/ssl/ssl.key' },
+                { key: 'INITIALIZED',                   value: '1'},
+                { key: 'DEFAULT_BACKGROUND_IMAGE',      value: 'images/bg6.jpg' },
+                { key: 'DEFAULT_PROFILE_IMAGE',         value: 'images/default.gif' },
+                { key: 'DEFAULT_LANGUAGE',              value: 'en' },
+                { key: 'KILL_UNAUTH_WEBSOCKET_TIMEOUT', value: '5000' }
             ];
 
             System.insert(keys, function (err) {
@@ -114,12 +128,22 @@ function init(err, db) {
 // Start or restart the ZenX Manager server
 function startServer(restart) {
 
-    var db = global.db;
+    var db = global.db,
+        Users = db.collection('Users');
 
     function start(){
 
         var zenxServer = express(),
             SystemVars = global.SystemVars;
+
+        // Parse json posts
+        zenxServer.use(bodyParser.json({
+            limit: SystemVars.MAX_HTTP_UPLOAD_SIZE,
+            extended: true
+        }));
+
+        // Place bouncer
+        zenxServer.use('*', bouncer);
 
         // Use compression on all requests
         zenxServer.use(compression());
@@ -131,12 +155,11 @@ function startServer(restart) {
             return next();
         });
 
-        // Parse json posts
-        zenxServer.use(bodyParser.json({ limit: SystemVars.MAX_HTTP_UPLOAD_SIZE }));
-
         // Start listening for api calls via post
         zenxServer.post("/api", function (req, res, next) {
-            api[req.body.api][req.body.request](req.body, db, req, res);
+            try{
+                api[req.body.api][req.body.request](req.body, db, req, res);
+            } catch (x) { res.send('{"message":"bad_request"}'); }
         });
 
         // Make assets folder publically accessible
@@ -149,7 +172,12 @@ function startServer(restart) {
         }, zenxServer).listen(config.zenx_client_port, config.zenx_client_bind);
 
         // Start and bind websocket server
-        global.wss = new ws.Server({ server: ZenXManager });
+        global.wss = new ws.Server({
+            server: ZenXManager,
+            headers: {
+                server: 'ZenX/' + package.version
+            }
+        });
 
         // Start listening for websocket connections
         global.wss.on('connection', function (socket) {
@@ -169,8 +197,14 @@ function startServer(restart) {
 
             // Remove from memory if closed
             socket.on('close', function () {
+                clearTimeout(socket.expiresTimeout);
                 _.remove(wsClients, socket);
             });
+
+            // Kill socket if not authenticated within time limit
+            socket.expiresTimeout = setTimeout(function () {
+                if (!socket.ZenXAuth) socket.close();
+            }, SystemVars.KILL_UNAUTH_WEBSOCKET_TIMEOUT);
 
         });
 

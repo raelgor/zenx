@@ -1,4 +1,4 @@
-// Initialize client
+﻿// Initialize client
 var app = angular.module('app', ['ngAnimate', 'ngMaterial']),
     ZenX = {
         socket: null,

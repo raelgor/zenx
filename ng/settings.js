@@ -1,6 +1,12 @@
-// The settings window controller, started whenever the window
+﻿// The settings window controller, started whenever the window
 // template code is compiled
-app.controller('settings', ["$scope", "$rootScope", "$timeout", function ($scope, $rootScope, $timeout) {
+app.controller('settings', [
+    "$scope",
+    "$rootScope",
+    "$timeout",
+    "$compile",
+    "$http",
+    function ($scope, $rootScope, $timeout, $compile, $http) {
     
     ZenX.log('Started settings controller.');
 
@@ -10,10 +16,22 @@ app.controller('settings', ["$scope", "$rootScope", "$timeout", function ($scope
 
         $http.post('api', {
             api: "core",
-            request: "settings",
+            request: "settings-template",
             token: ZenX.token
         })
         .success(function (response) {
+
+            if (response.message == "success") {
+
+                $scope.data = response.data;
+                $scope.$apply(function () {
+                    var content = $compile(response.template)($scope);
+                    $('[ng-controller="settings"]').html(content).removeClass('out');
+                });
+
+            } else {
+                ZenX.log("Templated failed to load with response: ",response);
+            }
 
         })
         .error(function (err) {

@@ -1,9 +1,12 @@
-// ZenX Core API
+﻿// ZenX Core API
 // These are core methods used by the ZenX Manager client.
 var shortid = require('shortid'),
     path    = require('path'),
     zenOut  = require(path.resolve(__dirname + './../zenOut.js')),
-    jade    = global.jade;
+    jade    = global.jade,
+    reqAuth = [
+        "settings-template"
+    ];
 
 module.exports = {
 
@@ -145,7 +148,7 @@ module.exports = {
                     expires: { $gt: new Date().getTime() }
                 }
             }
-        }, { _id: 1 }).toArray(function (err, user) {
+        }, { _id: 1, tokens: 1 }).toArray(function (err, user) {
 
             if (user.length) {
 
@@ -157,6 +160,15 @@ module.exports = {
                     "requestID": data.requestID,
                     "message": "success"
                 }));
+
+                // Kill socket when token expires
+                var expires = user[0].tokens.filter(function (t) {
+                    return t.token == data.token
+                })[0].expires - new Date().getTime();
+
+                socket.expiresTimeout = setTimeout(function () {
+                    socket.close();
+                }, expires);
 
             } else {
 
@@ -208,7 +220,7 @@ module.exports = {
 
     },
 
-    // Destroys the token and all WebSockets associated with it
+    // Destroys the token and all open WebSockets associated with it
     "purge-token": function (data, db, req, socket) {
 
         zenOut('Requested to purge token ' + data.token);
@@ -226,6 +238,17 @@ module.exports = {
             socket.token == data.token && socket.close();
         });
 
+    },
+
+    // Writes and returns settings template and data
+    "settings-template": function (data, db, req, res) {
+
     }
 
 }
+
+// Set auth flag to declare that only authenticated users can have access
+// to this method
+reqAuth.forEach(function (request) {
+    module.exports[request].auth = true;
+});
