@@ -6,7 +6,7 @@
         $scope.text = this.text;
     }
 
-    $('.user-block .user-img').click(function () { $('.user-menu').toggleClass('out'); });
+    $scope.toggleUserMenu = function () { $('.user-menu').toggleClass('out'); };
 
     // ZenX Window
     ZenX.createWindow = function (options) {
@@ -69,7 +69,8 @@
             template: template.removeClass('dialog-template out').addClass('confirm-content'),
             callback: function (win) {
                 win.find('.yes').click(close).click(yes || function () { }).focus();;
-                win.find('.no') .click(close).click(no  || function () { });
+                win.find('.no').click(close).click(no || function () { });
+                options.callback && options.callback(win);
             }
         });
 
@@ -96,6 +97,7 @@
             template: template.removeClass('dialog-template out').addClass('confirm-content'),
             callback: function (win) {
                 win.find('.yes').click(close).focus();
+                options.callback && options.callback(win);
             }
         });
 
@@ -121,13 +123,17 @@
     }
 
     // Start logout after confirm
-    $('.user-menu .option.logout').click(function () {
+    $scope.logout = function () {
         
-        ZenX.confirm({
+        if ($('.zenx-window[data-id="logout"]').length) ZenX.focus($('.zenx-window[data-id="logout"]'));
+        else ZenX.confirm({
             windowTitle: "ZenX Manager",
             title: ZenX.text.LOGOUT,
             message: ZenX.text.CONFIRM_LOGOUT,
-            buttons: "yes no"
+            buttons: "yes no",
+            callback: function(win){
+                win.attr('data-id', 'logout');
+            }
         }, function () {
 
             ZenX.log('Destroying token...');
@@ -159,10 +165,10 @@
 
         });
 
-    });
+    };
 
     // Start or focus settings window
-    $('.user-menu .option.settings').click(function () {
+    $('.user-menu .settings').click(function () {
 
         if($('.zenx-window[data-module="settings"]').length) return ZenX.focus($('.zenx-window[data-module="settings"]'));
 

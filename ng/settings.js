@@ -14,10 +14,9 @@ app.controller('settings', [
 
         ZenX.log('Loading settings template...');
 
-        $http.post('api', {
+        ZenX.send({
             api: "core",
-            request: "settings-template",
-            token: ZenX.token
+            request: "settings-template"
         })
         .success(function (response) {
 

@@ -14,7 +14,8 @@ var express     = require('express'),
     api         = {},
     prompt      = require('prompt'),
     jade        = global.jade = require('jade'),
-    bouncer     = require('http-bouncer');
+    bouncer     = require('http-bouncer'),
+    os          = require('os');
 
 // Add bouncing rule
 bouncer.config.JSON_API_CALLS.push({
@@ -157,9 +158,27 @@ function startServer(restart) {
 
         // Start listening for api calls via post
         zenxServer.post("/api", function (req, res, next) {
-            try{
-                api[req.body.api][req.body.request](req.body, db, req, res);
+
+            try {
+
+                var reqApi = api[req.body.api][req.body.request];
+                if (reqApi.auth && !reqApi.ws) {
+
+                    db.find({
+                        tokens: { $elemMatch: { token: String(req.body.token) } }
+                    }, { _id: 1 }).toArray(function (err, user) {
+
+                        if (err) return res.send('{"message":"bad_request"}');
+
+                        reqApi(req.body, db, req, res, user[0]);
+
+                    });
+
+                } else if (!reqApi.ws) reqApi(req.body, db, req, res);
+                else res.send('{"message":"bad_request"}');
+
             } catch (x) { res.send('{"message":"bad_request"}'); }
+
         });
 
         // Make assets folder publically accessible
@@ -187,11 +206,23 @@ function startServer(restart) {
 
             // Handle messages
             socket.on('message', function (data, flags) {
+                
+                try {
 
-                var message = JSON.parse(data);
+                    var message = JSON.parse(data);
 
-                if (socket.ZenXAuth || (message.api == "core" && message.request == "ws-auth"))
-                    api[message.api][message.request](message, db, data, socket);
+                    if (socket.ZenXAuth || (message.api == "core" && message.request == "ws-auth")) {
+
+                            var reqApi = api[message.api][message.request];
+
+                            reqApi(message, db, data, socket, {
+                                _id: socket.ZenXUser
+                            });
+
+
+                    }
+
+                } catch (x) { res.send('{"message":"bad_request"}'); }
 
             });
 

@@ -18,8 +18,8 @@ module.exports = {
         var collection = db.collection('Users');
 
         // Get username and password from request data
-        var username = data.username,
-            password = data.password;
+        var username = String(data.username),
+            password = String(data.password);
 
         // If initial login, save user
         if (global.INITIAL_LOGIN) {
@@ -144,7 +144,7 @@ module.exports = {
         collection.find({
             tokens: {
                 $elemMatch: {
-                    token: data.token,
+                    token: String(data.token),
                     expires: { $gt: new Date().getTime() }
                 }
             }
@@ -229,7 +229,7 @@ module.exports = {
         collection.update({ tokens: { $elemMatch: { token: data.token } } }, {
             $pull: {
                 tokens: {
-                    token: data.token
+                    token: String(data.token)
                 }
             }
         });
@@ -241,7 +241,16 @@ module.exports = {
     },
 
     // Writes and returns settings template and data
-    "settings-template": function (data, db, req, res) {
+    "settings-template": function (data, db, req, res, user) {
+
+        var Users = db.collection('Users');
+
+        Users.find({ _id: user._id }, { settings: 1 });
+
+        res.send(JSON.stringify({
+            "message": "api_under_construction",
+            "requestID": data.requestID
+        }));
 
     }
 

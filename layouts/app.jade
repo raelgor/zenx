@@ -2,6 +2,7 @@
 html(lang="en",	ng-app="app")
 	head
 		title="ZenX Manager"
+		meta(content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0",   name="viewport")
 		base(href=baseUrl,	target="_self")
 		link(href="fonts/icons.css",	rel="stylesheet",	type="text/css")
 		link(href="source/styles.css",	rel="stylesheet",	type="text/css")
@@ -47,7 +48,7 @@ html(lang="en",	ng-app="app")
 			.dock
 				.app-array
 				.user-block
-					.user-img.ani02
+					.user-img.ani02(ng-click="toggleUserMenu()")
 					.connected-light
 					.clock
 			.pool
@@ -55,7 +56,7 @@ html(lang="en",	ng-app="app")
 			.option.settings
 				span.icon-cog
 				span="{{ text.SETTINGS }}"
-			.option.logout
+			.option.logout(ng-click="logout()")
 				span.icon-exit
 				span="{{ text.LOGOUT }}"
 			span.arrow

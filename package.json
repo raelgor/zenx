@@ -1,6 +1,6 @@
 {
   "name": "zenx",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "description": "A lite cloud server system.",
   "homepage": "https://zenx.io/",
   "icon": "https://tournouatichu.com/zenx.png",
@@ -21,7 +21,7 @@
     "password-hash": "1.2.2",
     "body-parser": "1.12.3",
     "prompt": "0.2.14",
-    "http-bouncer":  "1.0.1"
+    "http-bouncer":  "1.0.2"
   },
   "devDependencies": {
     "gulp": "^3.8.11",

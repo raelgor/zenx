@@ -107,12 +107,13 @@ app.controller("login", ["$scope", "$timeout", "$http", "$rootScope", function (
         ZenX.log('Attempting to log in...');
 
         // Post the login request
-        $http.post('api', {
+        ZenX.send({
             request: 'login',
             username: $scope.username,
             password: $scope.password,
             api: 'core'
-        }).success(function (response) {
+        })
+        .success(function (response) {
 
             // If not successful return to login dialog
             if (response.message != "success") {
@@ -129,7 +130,7 @@ app.controller("login", ["$scope", "$timeout", "$http", "$rootScope", function (
             } else {
 
                 ZenX.log('Successful login. Initializing...');
-                ZenX.log('Login data: ', response)
+                ZenX.log('Login data: ', response);
 
                 // Empty login dialog and start loading
                 $scope.username = "";
@@ -146,7 +147,8 @@ app.controller("login", ["$scope", "$timeout", "$http", "$rootScope", function (
 
             }
 
-        }).error(function (err) {
+        })
+        .error(function (err) {
             ZenX.log('Login failed with error: ', err);
             ZenX.alert({
                 windowTitle: "ZenX Manager",
@@ -181,50 +183,73 @@ app.controller("login", ["$scope", "$timeout", "$http", "$rootScope", function (
             ZenX.socket.onopen = function () {
 
                 ZenX.log('WebSocket connected. Getting auth...');
-                var requestID = "ws-auth" + new Date().getTime(),
-                    wsAuth = {
+
+                var wsAuth = {
                         "api": "core",
                         "request": "ws-auth",
                         "token": data.token,
-                        "requestID": requestID
+                        "ws": true
                     };
 
-                ZenX.socketRequests[requestID] = function (data) {
+                ZenX.send(wsAuth)
+                    .success(function (data) {
 
-                    ZenX.log('Auth received: ', data);
-                    $('.user-block .connected-light').removeClass('offline');
+                        ZenX.log('Auth received: ', data);
+                        $('.user-block .connected-light').removeClass('offline');
 
-                    if (data.message != "success") {
+                        if (data.message != "success") {
 
-                        ZenX.log('Bad auth. Getting new in 1s...');
-                        setTimeout(function () {
-                            ZenX.socketRequests[requestID] = this;
-                            return ZenX.socket.send(JSON.stringify(wsAuth));
-                        }, 1000);
+                            ZenX.log('Bad auth. Getting new in 1s...');
+                            setTimeout(function () {
+                                ZenX.socketRequests[requestID] = this;
+                                return ZenX.socket.send(JSON.stringify(wsAuth));
+                            }, 1000);
 
-                    } else {
+                        } else {
 
-                        ZenX.log('Auth successful. Socket healthy.');
+                            ZenX.log('Auth successful. Socket healthy.');
+                            typeof callback == "function" && callback();
+
+                        }
+
+                    })
+                    .error(function (err) {
+
+                        ZenX.log('Websocket auth timed out. Procceeding...');
                         typeof callback == "function" && callback();
 
-                    }
-
-                }
-
-                ZenX.socket.send(JSON.stringify(wsAuth));
+                    });
 
                 ZenX.socket.onmessage = function (data) {
 
-                    data = JSON.parse(data.data);
-                    ZenX.socketRequests[data.requestID](data);
-                    delete ZenX.socketRequests[data.requestID];
+                    var data = JSON.parse(data.data),
+                        request = ZenX.socketRequests[data.requestID];
+                    request.onsuccess(data);
+                    !isNaN(request.timeoutFn) && clearTimeout(request.timeoutFn);
+                    if (!request.persistent) delete ZenX.socketRequests[data.requestID];
 
                 };
 
             };
 
+            // Log error
+            ZenX.socket.onerror = function (err) {
+                ZenX.log('WebSocket error: ', err);
+            };
+
             // Reconnect on close
             ZenX.socket.onclose = function () {
+
+                // Reset request handlers
+                for (var i in ZenX.socketRequests) {
+
+                    try {
+                        clearTimeout(ZenX.socketRequests[i].timeoutFn);
+                        ZenX.socketRequests[i].onerror({ error: 'connection_dropped' });
+                    } catch (x) { }
+                    delete ZenX.socketRequests[i];
+
+                }
 
                 // If dropped because of logout, let it be
                 if (ZenX.LOGGING_OUT) return delete ZenX.LOGGING_OUT;
@@ -290,6 +315,10 @@ app.controller("login", ["$scope", "$timeout", "$http", "$rootScope", function (
 
                 var audio = new Audio();
                 audio.src = src;
+
+                // Temporarily disable preloading audio  by commenting
+                // the following line as oncanplaythrough is
+                // not a reliable load event
                 assets.push(audio);
 
             });
