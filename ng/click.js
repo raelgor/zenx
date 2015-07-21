@@ -1,49 +1,9 @@
-﻿// Initialize client
-var app = angular.module('app', ['ngAnimate', 'ngMaterial']),
-    ZenX = {
-        socket: null,
-        socketRequests: {},
-        version: window.version,
-        modules: {},
-        text: {},
-        focusIndex: 1
-    };
-
-// Configure angular material theme and more
-app.config(['$mdThemingProvider',
-function ($mdThemingProvider) {
-
-    $mdThemingProvider.theme('default')
-      .primaryPalette('orange')
-      .accentPalette('yellow');
-
-}]);
-
-// Fancy console log
-ZenX.log = function (message, object) {
-
-    if(typeof message != "string") object = message;
-
-    var c1  = 'color:white;             font-size: 14px; text-shadow: 1px 1px 1px #999, -1px 1px 1px #999, -1px -1px 1px #999, 1px -1px 1px #999',
-        c2  = 'color:yellow;            font-size: 14px; text-shadow: 1px 1px 1px #999, -1px 1px 1px #999, -1px -1px 1px #999, 1px -1px 1px #999',
-        c3  = 'color:white;             font-size: 14px; text-shadow: 1px 1px 1px #999, -1px 1px 1px #999, -1px -1px 1px #999, 1px -1px 1px #999',
-        c4  = 'color: rgb(6, 152, 154); font-size: 12px;',
-        str = '%c[Zen%cX%c]%c ' + (typeof message == "string" ? message : '');
-
-    object ? console.log(str,c1,c2,c3,c4,object) : console.log(str,c1,c2,c3,c4);
-
-}
-
-// Log version and start clock
-ZenX.log("Version " + ZenX.version);
-ZenX.clock = setInterval(function () {
-    $('.user-block .clock').html(new Date().getHours() + ':' + (new Date().getMinutes()<10?'0':'') + new Date().getMinutes());
-}, 1000);
-
-// Global click handler
+﻿// Global click handler
 $(window).click(function (event) {
     
     var target = $(event.target);
+
+    if (target.is(".app-array > *")) return ZenX.gotoApp(target.attr('data-module-namespace'));
 
     if (target.is(":not(.user-block .user-img)")) $('.user-menu').addClass('out');
 
@@ -177,67 +137,7 @@ $(window).bind("mousemove", function (e) {
 
 });
 
-app.run(['$http', '$rootScope', function ($http, $rootScope) {
 
-    // Connection handler
-    ZenX.send = function (data) {
-
-        ZenX.token && (data.token = ZenX.token);
-
-        // User websocket if we have an open connection
-        if (this.socket && this.socket.readyState) {
-
-            var requestID = data.api + ':' + data.request + ':' + new Date().getTime();
-
-            data.requestID = requestID;
-            ZenX.socketRequests[requestID] = data;
-
-            data.success = function (fn) {
-
-                this.onsuccess = fn;
-                return this;
-
-            }
-
-            data.error = function (fn) {
-
-                this.onerror = fn;
-                return this;
-
-            }
-
-            ZenX.socket.send(JSON.stringify(data));
-
-            if (data.timeout !== 0 && !data.persistent) {
-
-                data.timeoutFn = setTimeout(function () {
-
-                    // Execute onerror
-                    data.onerror && data.onerror({ error: "websocket_timeout" });
-
-                    // Kill request handler
-                    delete ZenX.socketRequests[data.requestID];
-
-                }, data.timeout || 10000);
-
-            }
-
-            return data;
-
-        // Otherwise post
-        } else {
-
-            // Exit if request was stricktly for WebSocket
-            if (data.ws) return ZenX.log('Request canceled. No WebSocket available: ', data);
-
-            // Procceed with request
-            return $http.post('api',data);
-
-        }
-
-    }
-
-}]);
 
 // To avoid overflow scrolling
 $(document).bind('touchstart touchend touchmove', function (e) {
@@ -245,3 +145,14 @@ $(document).bind('touchstart touchend touchmove', function (e) {
     e.stopPropagation(); 
     return false;
 });
+
+// Toggle loading state of zenx window
+ZenX.winLoading = function (window, toggle) {
+        
+    if (toggle) {
+
+        $(window).find('.win-spinner.out').removeClass('out');
+
+    } else $(window).find('.win-spinner:not(.out)').addClass('out');
+
+}

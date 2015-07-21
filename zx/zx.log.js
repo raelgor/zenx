@@ -1,4 +1,4 @@
-var ZenXStr = "\033[0m[Zen\033[33mX\033[0m] ";
+﻿var ZenXStr = "\033[0m[Zen\033[33mX\033[0m] ";
 
 module.exports = function (string) {
 

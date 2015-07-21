@@ -1,4 +1,19 @@
-﻿app.controller('desktop', ['$scope','$compile','$timeout', '$rootScope', function ($scope,$compile,$timeout,$rootScope) {
+﻿app.controller('desktop', ['$scope', '$compile', '$timeout', '$rootScope', function ($scope, $compile, $timeout, $rootScope) {
+
+    // Log version and start clock
+    ZenX.log("Version " + ZenX.version);
+    ZenX.clock = setInterval(function () {
+        $('.user-block .clock').html(new Date().getHours() + ':' + (new Date().getMinutes() < 10 ? '0' : '') + new Date().getMinutes());
+    }, 1000);
+
+    setInterval(function () {
+        ZenX.send({
+            api: "core",
+            request: "refresh-session"
+        }).success(function (r) {
+            ZenX.csrf = r.session_token;
+        });
+    }, 50 * 1000);
 
     $scope.text = {};
 
@@ -7,7 +22,8 @@
     }
 
     $scope.toggleUserMenu = function () { $('.user-menu').toggleClass('out'); };
-
+    window.deCompile = $compile;
+    window.deScope = $scope;
     // ZenX Window
     ZenX.createWindow = function (options) {
 
@@ -33,18 +49,22 @@
         desktop.append(win);
 
         if (typeof options.template == "string") {
-            $scope.$apply(function () {
-                var content = $compile(options.template)($scope);
-                win.find('.window-content').append(content);
-            });
+            options.template = '<div class="win-spinner ani02 out"><div class="app-spinner ng-scope"></div></div>' + (options.template || '');
+            $timeout(function () {
+                $scope.$apply(function () {
+                    var content = $compile(options.template)($scope);
+                    win.find('.window-content').append(content);
+                    if (options.callback) options.callback(win);
+                });
+            }, 0);
         } else {
             win.find('.window-content').append(options.template || '');
+            if (options.callback) options.callback(win);
         }
 
         if (options.resizable == undefined || options.resizable) win.append('<div class="resizer"></div>');
         if (focus) ZenX.focus(win);
-        if (options.callback) options.callback(win);
-        if (options.maximizable != undefined && !options.maximizable) win.find('.window-head .fs').addClass('disabled')
+        if (options.maximizable != undefined && !options.maximizable) win.find('.window-head .fs').addClass('disabled');
 
     };
 
@@ -178,9 +198,10 @@
             minWidth: 600,
             minHeight: 600,
             title: ZenX.text.SETTINGS,
-            template: '<div class="app-spinner"></div><div class="out ani02" ng-controller="settings"></div>',
+            template: '<div class="out ani02" ng-controller="settings"></div>',
             callback: function (win) {
                 win.attr('data-module', 'settings');
+                ZenX.winLoading(win,true);
             }
         });
 

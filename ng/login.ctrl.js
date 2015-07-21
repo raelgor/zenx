@@ -48,42 +48,28 @@ app.controller("login", ["$scope", "$timeout", "$http", "$rootScope", function (
     var logo = new Image();
     logo.src = "/images/logo.png";
 
-    // If we have a token, authenticate
-    if (localStorage.getItem('session_token')) {
+    ZenX.send({
+        api: "core",
+        request: "auth"
+    }).success(function (response) {
 
-        $timeout(function () { $('.loading-status').removeClass('out'); }, 100);
-        ZenX.log('Token exists. Authenticating...');
+        // If not successful return to login dialog
+        if (response.message != "success") {
 
-        $http.post('api',{
-            api: "core",
-            request: "auth",
-            token: localStorage.getItem('session_token')
-        }).success(function (response) {
-
-            // If not successful return to login dialog
-            if (response.message != "success") {
-
-                ZenX.log('Authentication unsuccessful: ', response);
-                showLogin();
-                localStorage.removeItem('session_token');
-
-            } else {
-
-                ZenX.log('Authentication successful. Initializing...');
-                ZenX.log('Login data: ', response)
-
-                initialize(response);
-
-            }
-
-        }).error(function (err) {
-            ZenX.log('Authentication failed with error: ', err);
+            ZenX.log('Authentication unsuccessful: ', response);
             showLogin();
-        });
 
-    } else {
-        logo.onload = showLogin;
-    }
+        } else {
+
+            ZenX.log('Authentication successful. Initializing...');
+            ZenX.log('Login data: ', response)
+
+            initialize(response);
+
+        }
+
+    })
+    .error(showLogin);
 
     // Bound variables
     $scope.rememberMe = true;
@@ -110,7 +96,7 @@ app.controller("login", ["$scope", "$timeout", "$http", "$rootScope", function (
         ZenX.send({
             request: 'login',
             username: $scope.username,
-            password: $scope.password,
+            password: String(CryptoJS.MD5($scope.password)),
             api: 'core'
         })
         .success(function (response) {
@@ -135,12 +121,6 @@ app.controller("login", ["$scope", "$timeout", "$http", "$rootScope", function (
                 // Empty login dialog and start loading
                 $scope.username = "";
                 $scope.password = "";
-
-                // Save session token if rememberMe was checked
-                if ($scope.rememberMe) {
-                    localStorage.setItem('session_token', response.token);
-                    ZenX.log('Token saved to local storage.');
-                }
 
                 hideLogin();
                 initialize(response);
@@ -191,34 +171,19 @@ app.controller("login", ["$scope", "$timeout", "$http", "$rootScope", function (
                         "ws": true
                     };
 
-                ZenX.send(wsAuth)
-                    .success(function (data) {
+                
+                $('.user-block .connected-light').removeClass('offline');
 
-                        ZenX.log('Auth received: ', data);
-                        $('.user-block .connected-light').removeClass('offline');
+                if (data.message != "success") {
 
-                        if (data.message != "success") {
+                    ZenX.log('Auth failed: ', data);
 
-                            ZenX.log('Bad auth. Getting new in 1s...');
-                            setTimeout(function () {
-                                ZenX.socketRequests[requestID] = this;
-                                return ZenX.socket.send(JSON.stringify(wsAuth));
-                            }, 1000);
+                } else {
 
-                        } else {
+                    ZenX.log('Auth successful. Socket healthy.');
+                    typeof callback == "function" && callback();
 
-                            ZenX.log('Auth successful. Socket healthy.');
-                            typeof callback == "function" && callback();
-
-                        }
-
-                    })
-                    .error(function (err) {
-
-                        ZenX.log('Websocket auth timed out. Procceeding...');
-                        typeof callback == "function" && callback();
-
-                    });
+                }
 
                 ZenX.socket.onmessage = function (data) {
 
@@ -274,6 +239,7 @@ app.controller("login", ["$scope", "$timeout", "$http", "$rootScope", function (
             ZenX.log('Loading modules...');
 
             function loadModule(module) {
+                $('head').append('<link href="/modules/' + module + '/styles.css" rel="stylesheet" type="text/css">');
                 $.getScript('/modules/' + module + '/main.js')
                  .done(function () {
                      if (++moduleLoadCounter == modulesCount) {
@@ -298,10 +264,19 @@ app.controller("login", ["$scope", "$timeout", "$http", "$rootScope", function (
                     ZenX.user.profileImage || 'images/default.gif',
                     ZenX.user.backgroundImage || 'images/bg3.jpg'
                 ],
-                audio  = [
-                    'audio/newmsg.mp3'
+                audio = [
+                    'audio/newmsg.ogg',
+                    'audio/start.ogg',
                 ],
                 assetLoadCounter = 0;
+
+            $('.app-array').html('');
+
+            // List module icons
+            for (var key in ZenX.user.modules) {
+                images.push('modules/' + key + '/icon.png');
+                $('.app-array').append('<img data-module-namespace="' + key + '" src="modules/' + key + '/icon.png" />');
+            }
 
             images.forEach(function (src) {
 
@@ -319,7 +294,9 @@ app.controller("login", ["$scope", "$timeout", "$http", "$rootScope", function (
                 // Temporarily disable preloading audio  by commenting
                 // the following line as oncanplaythrough is
                 // not a reliable load event
-                assets.push(audio);
+                // assets.push(audio);
+
+                ZenX.assets.audio[src] = audio;
 
             });
 
@@ -343,6 +320,7 @@ app.controller("login", ["$scope", "$timeout", "$http", "$rootScope", function (
         function showDesktop() {
 
             ZenX.log('Initialization complete. Welcome!');
+            ZenX.assets.audio['audio/start.ogg'].play();
             $('.user-block .user-img').css('background-image', 'url(' + (ZenX.user.profileImage || 'images/default.gif') + ')');
             $('.desktop').removeClass('out')
                          .css('background-image', 'url(' + (data.user.backgroundImage || 'images/bg3.jpg') + ')');

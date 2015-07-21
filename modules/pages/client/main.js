@@ -2,7 +2,7 @@
 
     var module = {
 
-        namespace: 'system'
+        namespace: 'pages'
 
     };
 
@@ -11,6 +11,14 @@
         module.text = response;
 
     });
+
+    app.controller(module.namespace, ['$scope','$compile', function ($scope,$compile) {
+
+        ZenX.log('"' + module.namespace + '" controller started.2');
+
+        
+
+    }]);
 
     ZenX.modules[module.namespace] = module;
 
