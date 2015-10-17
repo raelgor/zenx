@@ -2,7 +2,7 @@ var zenx = require('./main.js'),
     path = require('path'),
     config = {
         "db_type": "mongodb",
-        "db_host": "mongodb://127.0.0.1:27017/zenx",
+        "db_host": "mongodb://192.168.2.2:27017/zenx",
         "db_user": "",
         "db_pass": "",
         "bind": "192.168.2.2",

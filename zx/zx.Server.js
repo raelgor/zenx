@@ -147,7 +147,10 @@
 
         // Add server stamp globally
         zenxServer.use('*', function (req, res, next) {
-            res.setHeader('Server', 'ZenX/' + package.version);
+
+            // SEO Checker insists...
+            //res.setHeader('Server', 'ZenX/' + package.version);
+
             res.setHeader('Connection', 'Keep-Alive');
             res.setHeader('Keep-Alive', 'timeout=15, max=100');
             return next();
@@ -216,9 +219,10 @@
         // Start https server with default SSL certificate
         if (config.https) server.server = require('https').createServer({
             key: fs.readFileSync(config.ssl_key),
-            cert: fs.readFileSync(config.ssl_crt)
+            cert: fs.readFileSync(config.ssl_crt),
+            ca: fs.readFileSync(config.ca)
         }, zenxServer)
-        else server.server = require('http').createServer();
+        else server.server = require('http').createServer(zenxServer);
 
         server.server.listen(config.port, config.bind);
 
