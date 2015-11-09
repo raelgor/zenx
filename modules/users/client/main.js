@@ -1,1 +1,0 @@
-window.moduleLoaded = 1;

@@ -1,6 +1,0 @@
-﻿{
-    "SETTINGS_LABEL": "Configuration of the System app.",
-    "LIVE_CPU_AND_MEM": "Display CPU and RAM usage live",
-    "LIVE_CPU_AND_MEM_INTERVAL": "Refresh rate of CPU and RAM usage data",
-    "MODULE_NAME": "Pages"
-}

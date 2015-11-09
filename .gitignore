@@ -2,3 +2,5 @@ node_modules/*
 *.bat
 .vscode
 *.psd
+typings
+ssl

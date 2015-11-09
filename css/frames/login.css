@@ -1,0 +1,88 @@
+.login-frame {
+    width: 360px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    animation: poplogin .6s;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+.login-frame .login-cred-wrapper {
+    width: 360px;
+    background: white;
+    border: 1px solid #949494;
+    border-radius: 3px;
+    box-shadow: 1px 2px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+.login-frame .fb-login-btn {
+    background: #3550B4!important;
+    color: white!important;
+    margin: 10px 1px!important;
+    padding: 10px!important;
+    border: 1px solid #353535!important;
+    border-radius: 3px!important;
+    box-shadow: 2px 2px rgba(0, 0, 0, 0.2)!important;
+    text-align: center!important;
+    cursor: pointer!important;
+    display: block !important;
+    width: 361px;
+}
+
+.login-frame .fb-login-btn:active, .login-frame .fb-login-btn:focus {
+    background: #2C4190!important;
+}
+
+.login-frame .logo-wrapper {
+    border-right: 1px solid #949494;
+	display: inline-block;
+	vertical-align: top;
+    height: 150px;
+    width: 150px;
+}
+
+.login-frame z-image.logo {
+    height: 150px;
+    width: 150px;
+}
+
+.login-frame form {
+    display: inline-block;
+    vertical-align: top;
+    width: 209px;
+    height: 150px;
+}
+
+.login-frame .login-btn {
+    font-weight: bold;
+    border-radius: 0px !important;
+    margin: 0px !important;
+    height: 52px;
+    width: 209px;
+    padding: 17px 0;
+    color: #5E5E5E;
+    text-shadow: 0px 1px rgba(255, 255, 255, 0.58);
+    border: none !important;
+    background: #F2F2F2 !important;
+    box-shadow: inset -5px -5px 70px rgba(0, 0, 0, 0.12) !important;
+}
+
+.login-frame input {
+    border: none !important;
+    background: white;
+    height: 18px;
+    width: 181px;
+    padding: 15px 14px;
+    border-bottom: 1px solid gray !important;
+    box-shadow: inset 4px 3px 10px rgba(0, 0, 0, 0.21);
+    border-radius: 0px !important;
+    margin: 0px !important;
+}
+
+.login-frame .login-btn:focus, .login-frame .login-btn:active {
+    background: #D1D1D1 !important;
+}

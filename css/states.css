@@ -1,0 +1,14 @@
+.ghost {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.unborn {
+	opacity: 0;
+	pointer-events: none;
+	transform: scale(0);
+}
+
+.pop {
+	animation: pop .6s;
+}
