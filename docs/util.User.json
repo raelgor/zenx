@@ -1,0 +1,82 @@
+// ZenX Platform User Data Model v0.0.1
+// This is the first draft of the platform's 
+// user model
+{
+	
+	// Unique user id of zenx.util.uuid
+	"uuid": "",
+	
+	// Login keys
+	"auth": {
+		"username": "",
+		"phone": "",
+		"email": "",
+		"fbid": ""
+	},
+	
+	// Legacy verified flag
+	"verified": 1,
+	
+	// Prefered language
+	"lang": "en_US",
+	
+	// Info
+	"info": {
+		"firstName": "",
+		"lastName": "",
+		"nickname": ""
+	},
+	
+	// Hashed password using npm's `password-hash`
+	"password": "",
+	
+	// Sessions
+	"sessions": {
+		"token1": { "expires": "unix-ts" },
+		"tokenN": { "expires": "unix-ts" }
+	},
+	
+	// App permissions
+	"perimissions": {
+		
+		// God mode
+		"admin": 1,
+		
+		// Platform access
+		"platform.login": 1,
+		
+		// User management
+		// Full user management
+		"users.system.all": 1,
+		"users.system.create": 1,
+		"users.system.createCount": 1,
+		"users.system.createCap": 1,
+		"users.system.delete": 1,
+		"users.system.deleteCount": 1,
+		"users.system.deleteCap": 1,
+		
+		// App-specific permissions
+		"app.<app-namespace>.<app-permission>": 1,
+		
+		// User info
+		"user.all": 1,
+		"user.changeProfImg": 1,
+		"user.changeUsername": 1,
+		"user.changeName": 1,
+		"user.changePassword": 1,
+		"user.changeEmail": 1,
+		"user.changeFbid": 1
+		
+	},
+	
+	// App and system settings
+	"settings": {
+		"system": {
+			"profImg": "/path/to/img.jpg"
+		},
+		"<app-namespace>": {
+			"app-settings": ""
+		}
+	}
+	
+}
