@@ -1,13 +1,11 @@
 var assert = require('assert');
 var fs = require('fs');
 var http = require('http');
-var ZenX = require('./../main.js');
-var zenx = new ZenX();
+var zenx = require('./../main.js');
 		
 describe('Server tests', function(){
 	
 	var server;
-	var defaultConfig;
 	
 	it('should make default server in less than 1s', function(done){
 		
@@ -37,19 +35,6 @@ describe('Server tests', function(){
 	it('status === 0', function(){
 			
 		assert.equal(server.status, 0);
-		
-	});
-	
-	it('should load default server config fast', function(done){
-		
-		setTimeout(function(){
-			
-			defaultConfig = require('./../src/server/defaultServerConfig.js');
-			done();
-			
-		},0);
-		
-		this.timeout(1000);
 		
 	});
 	
