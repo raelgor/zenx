@@ -1,6 +1,6 @@
 {
   "name": "zenx",
-  "version": "0.0.40",
+  "version": "0.0.42",
   "description": "A lite cloud server platform.",
   "homepage": "https://zenxplatform.com/",
   "icon": "http://tournouatichu.com/logolight.png",
@@ -14,13 +14,13 @@
     "url": "https://github.com/raelgor/zenx.git"
   },
   "scripts": {
-    "test": "mocha --compilers js:babel-core/register"
   },
   "dependencies": {
     "zenx-util": "latest",
     "zenx-server": "latest",
     "zenx-cache": "latest",
-    "zenx-platform": "latest"
+    "zenx-platform": "latest",
+    "zenx-lb": "latest"
   },
   "author": {
     "name": "Kosmas Papadatos",

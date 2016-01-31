@@ -11,6 +11,9 @@ module.exports = {
 	Server: require('zenx-server'),
 	
 	// ZenX Cache module
-	cache: require('zenx-cache')
+	cache: require('zenx-cache'),
+    
+	// ZenX Load Balancer module
+	lb: require('zenx-lb')
 			
 }
